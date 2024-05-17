@@ -195,15 +195,36 @@ function handleUpload(ev: Event): void {
     } else { console.error('Somehow the uploaded FileList is Null.') }
 }
 
+/**
+ * 
+ * @param file A JSON file containing an ElementWrapper
+ */
 function parseJSON(file: File) {
+    const 
     const jsonText = file.text();
-    const readJSON = jsonText.then((text) => {
-        console.log(text)
-        JSON.parse(text)
-    }).then()
+    const readJSON = jsonText.then(
+        (text) => {
+            console.log(text)
+            JSON.parse(text)
+        },
+        (text) => {
+            
+        }).then()
 
 }
 
+class BoH_Element {}
 
+class ElementWrapper {
+    element: BoH_Element;
+
+    constructor(elementwrapper: any) {
+        if (elementwrapper.element){
+            this.element = elementwrapper.element;
+        } else {
+            throw new ReferenceError(`${elementwrapper} does not contain an element.`)
+        }
+    }
+}
 
 
