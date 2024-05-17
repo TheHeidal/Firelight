@@ -1,5 +1,15 @@
 "use strict";
-var files = [
+/**
+ * @author MsEvildoom <msEvildoom@gmail.com>
+ * @fileoverview Parses the .json content files from Book of Hours into a user-friendly readable format.
+ * @copyright Firelight is an independent work by MsEvildoom and is not affiliated with Weather Factory Ltd, Secret Histories or any related official content. It is published under Weather Factory’s Sixth History Community Licence.
+ *  The author has attempted to create a work that does not contain any of Weather Factory's writing; all content in Firelight must be provided by the user.
+ *  Firelight by MsEvildoom is licensed under CC BY-NC 4.0, except any content owned by Weather Factory.
+ */
+/**
+ * The file structure of BOH content.
+ */
+const files = [
     // Folders that aren't game content have been commented out
     // ['achievements', []],
     // ['cultures', []],
@@ -134,21 +144,19 @@ var files = [
             'workstations_village.json',
         ]]
 ];
-var fileChecklist = document.getElementById('file-checklists');
+const fileChecklist = document.getElementById('file-checklists');
 if (fileChecklist) {
-    for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
-        var _a = files_1[_i], folderName = _a[0], fileNames = _a[1];
-        var folderElement = document.createElement('div');
+    for (const [folderName, fileNames] of files) {
+        const folderElement = document.createElement('div');
         fileChecklist.append(folderElement);
-        var folderNameElement = document.createElement('p');
+        const folderNameElement = document.createElement('p');
         folderNameElement.textContent = folderName;
-        var filesList = document.createElement('ul');
+        const filesList = document.createElement('ul');
         folderElement.append(folderNameElement, filesList);
-        for (var _b = 0, fileNames_1 = fileNames; _b < fileNames_1.length; _b++) {
-            var fileName = fileNames_1[_b];
-            var fileElement = document.createElement('li');
+        for (const fileName of fileNames) {
+            const fileElement = document.createElement('li');
             fileElement.textContent = fileName;
-            fileElement.id = "".concat(folderName, "/").concat(fileName);
+            fileElement.id = `${folderName}/${fileName}`;
             filesList.append(fileElement);
         }
     }
@@ -156,15 +164,49 @@ if (fileChecklist) {
 else {
     console.error('Could not find file-checklists');
 }
-function handleJSON(ev) {
-    var inputElement = ev.currentTarget;
-    var fileList = inputElement.files;
-    console.log(fileList);
-}
-var fileSelector = document.getElementById('file-selector');
+const fileSelector = document.getElementById('file-selector');
 if (fileSelector instanceof HTMLInputElement) {
-    fileSelector.addEventListener('change', handleJSON);
+    fileSelector.addEventListener('change', handleUpload);
 }
 else {
     console.error('file-selector is not a input element');
 }
+/**
+ * Verifies the uploaded files and sends them to the JSON parser
+ * @param ev an HTMLInputElement being changed to upload files.
+ */
+function handleUpload(ev) {
+    const inputElement = ev.currentTarget;
+    const fileList = inputElement.files;
+    if (fileList) {
+        console.log(fileList);
+        if (fileList.length === 1) {
+            const file = fileList.item(0);
+            if (file) {
+                if (file.name.toLowerCase().endsWith('.json')) {
+                    parseJSON(file);
+                }
+                else {
+                    console.error("Uploaded file is not .json");
+                }
+            }
+            else {
+                console.error('Somehow the uploaded file is Null');
+            }
+        }
+        else {
+            console.error("Iteration hasn't been implemented yet");
+        }
+    }
+    else {
+        console.error('Somehow the uploaded FileList is Null.');
+    }
+}
+function parseJSON(file) {
+    const jsonText = file.text();
+    const readJSON = jsonText.then((text) => {
+        console.log(text);
+        JSON.parse(text);
+    }).then();
+}
+//# sourceMappingURL=Firelight.js.map

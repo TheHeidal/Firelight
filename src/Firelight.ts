@@ -1,3 +1,15 @@
+/**
+ * @author MsEvildoom <msEvildoom@gmail.com>
+ * @fileoverview Parses the .json content files from Book of Hours into a user-friendly readable format.
+ * @copyright Firelight is an independent work by MsEvildoom and is not affiliated with Weather Factory Ltd, Secret Histories or any related official content. It is published under Weather Factory’s Sixth History Community Licence.
+ *  The author has attempted to create a work that does not contain any of Weather Factory's writing; all content in Firelight must be provided by the user.
+ *  Firelight by MsEvildoom is licensed under CC BY-NC 4.0, except any content owned by Weather Factory. 
+ */
+
+
+/**
+ * The file structure of BOH content.
+ */
 const files: [string, string[]][] = [
     // Folders that aren't game content have been commented out
     // ['achievements', []],
@@ -155,19 +167,43 @@ if (fileChecklist) {
 
 
 
-
-function handleJSON(ev: Event): void {
-    const inputElement = ev.currentTarget as HTMLInputElement;
-    const fileList = inputElement.files;
-    console.log(fileList);
-}
-
 const fileSelector = document.getElementById('file-selector');
 
 if (fileSelector instanceof HTMLInputElement) {
-    fileSelector.addEventListener('change', handleJSON);
+    fileSelector.addEventListener('change', handleUpload);
 } else {
     console.error('file-selector is not a input element')
 }
+
+/**
+ * Verifies the uploaded files and sends them to the JSON parser
+ * @param ev an HTMLInputElement being changed to upload files.
+ */
+function handleUpload(ev: Event): void {
+    const inputElement = ev.currentTarget as HTMLInputElement;
+    const fileList = inputElement.files;
+    if (fileList) {
+        console.log(fileList);
+        if (fileList.length === 1) {
+            const file = fileList.item(0);
+            if (file) {
+                if (file.name.toLowerCase().endsWith('.json')) {
+                    parseJSON(file);
+                } else { console.error("Uploaded file is not .json") }
+            } else { console.error('Somehow the uploaded file is Null') }
+        } else { console.error("Iteration hasn't been implemented yet") }
+    } else { console.error('Somehow the uploaded FileList is Null.') }
+}
+
+function parseJSON(file: File) {
+    const jsonText = file.text();
+    const readJSON = jsonText.then((text) => {
+        console.log(text)
+        JSON.parse(text)
+    }).then()
+
+}
+
+
 
 

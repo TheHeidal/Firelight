@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$USER_HOME$/OneDrive/Documents/Book of Hours/Hush-House" vcs="Git" />
     <mapping directory="$USER_HOME$/OneDrive/Documents/Book of Hours/On Weavings" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>
