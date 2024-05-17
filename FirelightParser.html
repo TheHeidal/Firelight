@@ -4,15 +4,23 @@
 <head>
     <meta charset="utf-8" />
     <title>Firelight Parser</title>
-    
+    <link rel="stylesheet" href="dis\Firelight.css" />
 </head>
 
 <body>
-    <h1>Select JSONs you want to parse.</h1>
-    <!-- The `multiple` attribute lets users select multiple files. -->
-    <input type="file" id="file-selector" multiple>
+    <main>
+        <h1>Select JSONs you want to parse.</h1>
+        <div>
+            <!-- The button to let the user input JSONs. -->
+            <input type="file" id="file-selector" multiple>
+        </div>
+        <aside>
+            <h2>Game Files</h2>
+            <!-- A way to keep track of what JSONs have been uploaded -->
+            <div id="file-checklists"> </div>
+        </aside>
+    </main>
     <script src="dist\Firelight.js"></script>
-
 </body>
 
 </html>
