@@ -200,31 +200,113 @@ function handleUpload(ev: Event): void {
  * @param file A JSON file containing an ElementWrapper
  */
 function parseJSON(file: File) {
-    const 
-    const jsonText = file.text();
-    const readJSON = jsonText.then(
+    const readJSON = file.text().then(
         (text) => {
             console.log(text)
             JSON.parse(text)
-        },
-        (text) => {
-            
         }).then()
 
 }
 
-class BoH_Element {}
+type IDictionary<K extends string | number | symbol, V> = {
+    [key in K]: V;
+};
+
+type ID = string;
+
 
 class ElementWrapper {
-    element: BoH_Element;
+    elements: BoH_Element[];
 
-    constructor(elementwrapper: any) {
-        if (elementwrapper.element){
-            this.element = elementwrapper.element;
+    constructor(elementwrapper: object) {
+        if (elementwrapper.elements) {
+            this.elements = elementwrapper.elements;
         } else {
-            throw new ReferenceError(`${elementwrapper} does not contain an element.`)
+            throw new ReferenceError(`${elementwrapper} does not contain elements.`)
         }
     }
 }
 
+/**
+ * An Element from BOH.
+ * 
+ *  For reference, consult the Secret Histories Modding Guide at https://docs.google.com/document/d/1BZiUrSiT8kKvWIEvx5DObThL4HMGVI1CluJR20CWBU0/edit?usp=sharing
+ */
+class BoH_Element {
+    id: ID;
+    label: string | undefined;
+    desc: string | undefined;
+    isAspect: Boolean | undefined;
+    icon: string | undefined;
+    decayTo: string | undefined;
+    verbicon: string | undefined;
+    xtriggers: IDictionary<string, XTrigger[]> | undefined;
+    achievements: string[] | undefined;
 
+
+
+}
+
+
+class Aspect extends BoH_Element {
+    isAspect: true = true;
+    isHidden: boolean | undefined;
+    noArtNeeded: boolean;
+}
+
+class Card extends BoH_Element {
+    isAspect: false = false;
+    aspects: IDictionary<ID, number> | undefined;
+    lifetime: number | undefined;
+    resaturate: boolean | undefined;
+    slots: Slot[] | undefined;
+    isHidden: boolean | undefined;
+    unique: boolean | undefined;
+    uniquenessgroup: ID
+}
+
+// TODO:
+class XTrigger { }
+
+// TODO: Implement
+class Slot {
+    id: ID;
+    label: string | undefined;
+    desc: string | undefined;
+    required: IDictionary<ID, number> | undefined;
+    essential: IDictionary<ID, number> | undefined;
+    forbidden: IDictionary<ID, number> | undefined;
+    consumes: boolean | undefined;
+    actionId: ID | undefined;
+    greedy: boolean | undefined;
+    ifaspectspresent: IDictionary<ID, number> | undefined;
+
+}
+
+class Verb {
+    id: ID;
+    label: string | undefined;
+    desc: string | undefined;
+    slot: Slot | undefined;
+}
+
+class Ending {
+    id: ID;
+    label: string | undefined;
+    desc: string | undefined;
+    achievements: string[] | undefined;
+}
+
+class Acchievement {
+    id: ID;
+    isCategory: boolean | undefined;
+    category: ID | undefined;
+    label: string | undefined;
+    iconUnlocked: string | undefined;
+    descriptionUnlocked: string;
+    iconLocked: string | undefined; // defaults to ""
+    descriptionLocked: string | undefined;
+    unlockMessage: string | undefined;
+    isHidden: boolean | undefined;
+    singleDescription: boolean | undefined;
+}
