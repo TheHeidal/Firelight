@@ -212,17 +212,20 @@ function parseJSON(file: File) {
 type ID = string;
 
 
-class ElementWrapper {
+interface ElementWrapper {
     elements: BOHElementClass[];
-
-    constructor(elementwrapper: object) {
-        if ("elements" in elementwrapper) {
-            this.elements = elementwrapper.elements as BOHElementClass[];
-        } else {
-            throw new ReferenceError(`${elementwrapper} does not contain elements.`)
-        }
-    }
 }
+// class ElementWrapper {
+//     elements: BOHElementClass[];
+
+//     constructor(elementwrapper: object) {
+//         if ("elements" in elementwrapper) {
+//             this.elements = elementwrapper.elements as BOHElementClass[];
+//         } else {
+//             throw new ReferenceError(`${elementwrapper} does not contain elements.`)
+//         }
+//     }
+// }
 
 interface BOH_Element {
     id: ID;
@@ -367,8 +370,101 @@ class XTriggerEffectClass implements XTriggerEffect {
     }
 }
 
-
 // TODO: Implement
+
+interface Deck {
+    id: ID;
+    label?: string;
+    desc?: string;
+    resetonexhaustion: boolean; // must be true unless defaultcard is defined
+    spec?: ID[]; //must be defined and not empty unless defaultcard is defined
+    defaultcard?: ID;
+
+}
+
+/**A matchstring is an id that ends with a * */
+type IDMatchString = string & { _stringEndingWithStarBrand: never };
+
+function isStringEndingWithStar(str: string): str is StringEndingWithStar {
+    return str.endsWith("*");
+}
+
+interface InternalDeck {
+    spec: ID[];
+    draws: number;
+    defaultcard: ID;
+    resetonexhaustion: boolean;
+}
+
+interface Mutation {
+    filter: ID;
+    mutate: ID;
+    level: number;
+    additive: boolean;
+}
+
+interface RecipeLink {
+    id: ID;
+    chance?: number;
+    // NOTE: challenges seems unused in BoH
+    // NOTE: the following properties seem unique to BoH.
+    additional?: boolean;
+    topath?: string;
+    outputpath?: string;
+
+}
+
+interface AltRecipeLink {
+    id: ID | IDMatchString;
+
+}
+
+
+/**  Recipes take nouns (cards), and a verb, and combine them into something that makes sense.
+ * 
+ * 
+ * In BoH, some properties seem unused:
+ * 
+ * - maxexecutions,
+ * - tablereqs,
+ * - haltverb,
+ * - deleteverb,
+ * - signalimportantloop,
+ * - signalendingflavour 
+ * - burnimage
+ * - portaleffect
+ * - inductions
+ * 
+ * linked and alt both seem to be different.
+ * 
+ * However, the Secret Histories engine probably still supports these.
+*/
+interface Recipe {
+    id: ID;
+    actionid: ID;
+    craftable: boolean;
+    hintonly?: boolean;
+    warmup?: number;
+    label?: string;
+    slots?: Slot[]; //can only have one slot
+    startdescription?: string;
+    desc?: string;
+    required?: { [id: ID]: number | ID }
+    tablereqs?: { [id: ID]: number }; // I think BoH doesn't use this.
+    extantreqs?: { [id: ID]: number };
+    effects?: { [id: ID]: number };
+    purge?: { [id: ID]: number };
+    aspects?: { [id: ID]: number };
+    deckeffects?: { [id: ID]: number };
+    internaldeck?: InternalDeck;
+    ending?: ID;
+    achievements?: ID[];
+    mutations?: Mutation[];
+    linked?: RecipeLink[];
+    alt?: AltRecipeLink[];
+    xpans?: {[id: ID]: number};
+}
+
 interface Slot {
     id: ID;
     label?: string;
@@ -383,30 +479,30 @@ interface Slot {
 
 }
 
-class Verb {
+interface Verb {
     id: ID;
-    label: string | undefined;
-    desc: string | undefined;
-    slot: Slot | undefined;
+    label?: string;
+    desc?: string;
+    slot?: Slot;
 }
 
-class Ending {
+interface Ending {
     id: ID;
-    label: string | undefined;
-    desc: string | undefined;
-    achievements: string[] | undefined;
+    label?: string;
+    desc?: string;
+    achievements?: string[];
 }
 
-class Achievement {
+interface Achievement {
     id: ID;
-    isCategory: boolean | undefined;
-    category: ID | undefined;
-    label: string | undefined;
-    iconUnlocked: string | undefined;
-    descriptionUnlocked: string;
-    iconLocked: string | undefined; // defaults to ""
-    descriptionLocked: string | undefined;
-    unlockMessage: string | undefined;
-    isHidden: boolean | undefined;
-    singleDescription: boolean | undefined;
+    isCategory?: boolean;
+    category?: ID;
+    label?: string;
+    iconUnlocked?: string;
+    descriptionUnlocked?: string;
+    iconLocked?: string;
+    descriptionLocked?: string;
+    unlockMessage?: string;
+    isHidden?: boolean;
+    singleDescription?: boolean;
 }
