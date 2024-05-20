@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "target": "ES2015", // or "es6" for more modern JavaScript
+      "target": "ES2017", // or "es6" for more modern JavaScript
       "module": "commonjs", // or "esnext" for ES module support
       "strict": true, // enables all strict type-checking options
       "outDir": "./dist", // output directory for compiled files

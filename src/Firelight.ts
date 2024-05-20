@@ -213,95 +213,173 @@ type ID = string;
 
 
 class ElementWrapper {
-    elements: BoH_Element[];
+    elements: BOHElementClass[];
 
     constructor(elementwrapper: object) {
         if ("elements" in elementwrapper) {
-            this.elements = elementwrapper.elements as BoH_Element[];
+            this.elements = elementwrapper.elements as BOHElementClass[];
         } else {
             throw new ReferenceError(`${elementwrapper} does not contain elements.`)
         }
     }
 }
 
+interface BOH_Element {
+    id: ID;
+    label?: string;
+    desc?: string;
+    isAspect?: boolean;
+    icon?: string;
+    decayTo?: ID;
+    verbicon?: string;
+    xtriggers?: { [id: ID]: (XTriggerEffectClass | string)[] };
+    achievements?: string[];
+    // BOH specific properties
+    xexts?: { [id: ID]: string };
+    fx?: { [id: ID]: string | number };
+    ambits?: { [id: ID]: number };
+    ambittable?: boolean;
+}
+
+interface Aspect extends BOH_Element {
+    isAspect: true;
+    isHidden?: boolean;
+    noartneeded?: boolean;
+}
+
+interface Card extends BOH_Element {
+    isAspect?: false;
+    aspects?: { [id: ID]: number };
+    lifetime?: number;
+    resaturate?: boolean;
+    slots?: Slot[];
+    unique?: boolean;
+    uniquenessgroup?: ID;
+}
+
 /**
  * An Element from BOH.
  * 
+ *  An Element is anything that's a card, an object, or an aspect.
  *  For reference, consult the Secret Histories Modding Guide at https://docs.google.com/document/d/1BZiUrSiT8kKvWIEvx5DObThL4HMGVI1CluJR20CWBU0/edit?usp=sharing
  */
-class BoH_Element {
+abstract class BOHElementClass implements BOH_Element {
     id: ID;
-    label: string | undefined = "";
-    desc: string | undefined = "";
-    isAspect: Boolean | undefined = false;
-    icon: string | undefined = "";
-    decayTo: ID | undefined = "";
-    verbicon: string | undefined = "";
-    xtriggers: { [id: ID]: XTriggerEffect[] } | undefined;
-    achievements: string[] | undefined;
+    label: string;
+    desc: string;
+    icon: string;
+    decayTo: ID;
+    verbicon: string;
+    xtriggers: { [id: ID]: XTriggerEffectClass[] };
+    achievements: string[];
 
-    xexts: { [id: ID]: string } | undefined;
-    fx: { [id: ID]: string | number } | undefined;
-    ambits: { [id: ID]: number } | undefined;
+    xexts: { [id: ID]: string };
+    fx: { [id: ID]: string | number };
+    ambits: { [id: ID]: number };
+    ambittable: boolean;
 
+    public constructor(data: BOH_Element) {
+        this.id = data.id;
+        this.label = data.label ?? "";
+        this.desc = data.desc ?? "";
+        this.icon = data.icon ?? "";
+        this.decayTo = data.decayTo ?? "";
+        this.verbicon = data.verbicon ?? "";
+        this.achievements = data.achievements ?? [];
+
+        if (data.xtriggers === undefined) {
+            this.xtriggers = {};
+        } else {
+            this.xtriggers = {};
+            for (const [catalyst, effects]
+                of Object.entries(data.xtriggers)) {
+                this.xtriggers[catalyst] = effects.map(x => new XTriggerEffectClass(x));
+            }
+        }
+
+        this.xexts = data.xexts ?? {};
+        this.fx = data.fx ?? {};
+        this.ambits = data.ambits ?? {};
+        this.ambittable = data.ambittable ?? false;
+
+    }
 }
 
-
-class Aspect extends BoH_Element {
+class AspectClass extends BOHElementClass implements Aspect {
     isAspect: true = true;
-    isHidden: boolean = false;
-    noArtNeeded: boolean = false;
+    isHidden: boolean;
+    noArtNeeded: boolean;
+
+    constructor(data: Aspect) {
+        super(data);
+        this.isHidden = data.isHidden ?? false;
+        this.noArtNeeded = data.noartneeded ?? false;
+    }
+
 }
 
-class Card extends BoH_Element {
+class CardClass extends BOHElementClass implements Card {
     isAspect: false = false;
-    aspects: { [id: ID]: number } | undefined;
-    lifetime: number | undefined;
-    resaturate: boolean | undefined = false;
-    slots: Slot[] | undefined = [];
-    isHidden: boolean | undefined = false;
-    unique: boolean | undefined = false;
-    uniquenessgroup: ID | undefined = "";
+    aspects: { [id: ID]: number } = {};
+    lifetime: number = 0;
+    resaturate: boolean = false;
+    slots: Slot[] = [];
+    unique: boolean = false;
+    uniquenessgroup: ID = "";
+
+    constructor(data: Card) {
+        super(data);
+        this.isAspect = false;
+        this.aspects = data.aspects ?? {};
+        this.lifetime = data.lifetime ?? 0;
+        this.resaturate = data.resaturate ?? false;
+        this.slots = data.slots ?? [];
+        this.unique = data.unique ?? false;
+        this.uniquenessgroup = data.uniquenessgroup ?? "";
+    }
 }
 
-class XTriggerEffect {
-    private _morpheffect: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' |
-        undefined;
-    public get morpheffect(): 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' {
-        if (this._morpheffect === undefined) {
-            return 'transform'
-        } else { return this._morpheffect; }
+interface XTriggerEffect {
+    morpheffect: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation';
+    id?: ID;
+    level?: number;
+    chance?: number;
+}
+
+class XTriggerEffectClass implements XTriggerEffect {
+    morpheffect: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation';
+    id?: ID;
+    level?: number;
+    chance?: number;
+
+    constructor(data: XTriggerEffect | string) {
+        if (typeof data === "string") {
+            this.morpheffect = 'transform';
+            this.id = data;
+            this.level = 1;
+            this.chance = 100;
+        } else {
+            this.morpheffect = data.morpheffect;
+            this.id = data.id;
+            this.level = data.level ?? 1;
+            this.chance = data.chance ?? 100;
+        }
     }
-    public set morpheffect(value: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' |
-        undefined) {
-        this._morpheffect = value;
-    }
-    id: ID | undefined;
-    private _level: number | undefined = 1;
-    public get level(): number {
-        if (this._level === undefined) {
-            return 1;
-        } else { return this._level; }
-    }
-    public set level(value: number | undefined) {
-        this._level = value;
-    }
-    chance: number | undefined = 100;
 }
 
 
 // TODO: Implement
-class Slot {
+interface Slot {
     id: ID;
-    label: string | undefined;
-    desc: string | undefined;
-    required: { [id: ID]: number } | undefined;
-    essential: { [id: ID]: number } | undefined;
-    forbidden: { [id: ID]: number } | undefined;
-    consumes: boolean | undefined;
-    actionId: ID | undefined;
-    greedy: boolean | undefined;
-    ifaspectspresent: { [id: ID]: number } | undefined;
+    label?: string;
+    desc?: string;
+    required?: { [id: ID]: number };
+    essential?: { [id: ID]: number };
+    forbidden?: { [id: ID]: number };
+    consumes?: boolean;
+    actionId?: ID;
+    greedy?: boolean;
+    ifaspectspresent?: { [id: ID]: number };
 
 }
 
