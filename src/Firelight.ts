@@ -208,9 +208,6 @@ function parseJSON(file: File) {
 
 }
 
-type IDictionary<K extends string | number | symbol, V> = {
-    [key in K]: V;
-};
 
 type ID = string;
 
@@ -219,8 +216,8 @@ class ElementWrapper {
     elements: BoH_Element[];
 
     constructor(elementwrapper: object) {
-        if (elementwrapper.elements) {
-            this.elements = elementwrapper.elements;
+        if ("elements" in elementwrapper) {
+            this.elements = elementwrapper.elements as BoH_Element[];
         } else {
             throw new ReferenceError(`${elementwrapper} does not contain elements.`)
         }
@@ -234,52 +231,77 @@ class ElementWrapper {
  */
 class BoH_Element {
     id: ID;
-    label: string | undefined;
-    desc: string | undefined;
-    isAspect: Boolean | undefined;
-    icon: string | undefined;
-    decayTo: string | undefined;
-    verbicon: string | undefined;
-    xtriggers: IDictionary<string, XTrigger[]> | undefined;
+    label: string | undefined = "";
+    desc: string | undefined = "";
+    isAspect: Boolean | undefined = false;
+    icon: string | undefined = "";
+    decayTo: ID | undefined = "";
+    verbicon: string | undefined = "";
+    xtriggers: { [id: ID]: XTriggerEffect[] } | undefined;
     achievements: string[] | undefined;
 
-
+    xexts: { [id: ID]: string } | undefined;
+    fx: { [id: ID]: string | number } | undefined;
+    ambits: { [id: ID]: number } | undefined;
 
 }
 
 
 class Aspect extends BoH_Element {
     isAspect: true = true;
-    isHidden: boolean | undefined;
-    noArtNeeded: boolean;
+    isHidden: boolean = false;
+    noArtNeeded: boolean = false;
 }
 
 class Card extends BoH_Element {
     isAspect: false = false;
-    aspects: IDictionary<ID, number> | undefined;
+    aspects: { [id: ID]: number } | undefined;
     lifetime: number | undefined;
-    resaturate: boolean | undefined;
-    slots: Slot[] | undefined;
-    isHidden: boolean | undefined;
-    unique: boolean | undefined;
-    uniquenessgroup: ID
+    resaturate: boolean | undefined = false;
+    slots: Slot[] | undefined = [];
+    isHidden: boolean | undefined = false;
+    unique: boolean | undefined = false;
+    uniquenessgroup: ID | undefined = "";
 }
 
-// TODO:
-class XTrigger { }
+class XTriggerEffect {
+    private _morpheffect: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' |
+        undefined;
+    public get morpheffect(): 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' {
+        if (this._morpheffect === undefined) {
+            return 'transform'
+        } else { return this._morpheffect; }
+    }
+    public set morpheffect(value: 'transform' | 'spawn' | 'quantity' | 'mutate' | 'setmutation' |
+        undefined) {
+        this._morpheffect = value;
+    }
+    id: ID | undefined;
+    private _level: number | undefined = 1;
+    public get level(): number {
+        if (this._level === undefined) {
+            return 1;
+        } else { return this._level; }
+    }
+    public set level(value: number | undefined) {
+        this._level = value;
+    }
+    chance: number | undefined = 100;
+}
+
 
 // TODO: Implement
 class Slot {
     id: ID;
     label: string | undefined;
     desc: string | undefined;
-    required: IDictionary<ID, number> | undefined;
-    essential: IDictionary<ID, number> | undefined;
-    forbidden: IDictionary<ID, number> | undefined;
+    required: { [id: ID]: number } | undefined;
+    essential: { [id: ID]: number } | undefined;
+    forbidden: { [id: ID]: number } | undefined;
     consumes: boolean | undefined;
     actionId: ID | undefined;
     greedy: boolean | undefined;
-    ifaspectspresent: IDictionary<ID, number> | undefined;
+    ifaspectspresent: { [id: ID]: number } | undefined;
 
 }
 
@@ -297,7 +319,7 @@ class Ending {
     achievements: string[] | undefined;
 }
 
-class Acchievement {
+class Achievement {
     id: ID;
     isCategory: boolean | undefined;
     category: ID | undefined;
